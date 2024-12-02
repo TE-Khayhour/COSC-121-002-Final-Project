@@ -2,10 +2,12 @@
 
 #**Getting Started**
 1. Get Python 3.7+
-2. Get pip, then install pygame
+2. Get pip, then install pygame:
+
    $ pip install pygame
-3. run the game
-   $ python main.py
+4. run the game:
+
+    $ python main.py
 
 #**How to play this game?**
   1. Choose the theme and the difficulty then click play
