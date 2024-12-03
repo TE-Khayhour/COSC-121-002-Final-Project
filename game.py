@@ -16,10 +16,33 @@ screen = pygame.display.set_mode(
 my_font = pygame.font.SysFont(c["font"], c["font_size"], bold=True)
 WHITE = (255, 255, 255)
 
+def load_highest_score():
+    """
+    Load the highest score from a text file.
+    
+    Returns:
+        int: Highest score, or 0 if file doesn't exist or is invalid
+    """
+    try:
+        with open("highest_score.txt", "r") as f:
+            return int(f.read().strip())
+    except (FileNotFoundError, ValueError):
+        return 0
+
+def save_highest_score(score):
+    """
+    Save the highest score to a text file.
+    
+    Parameters:
+        score (int): Score to save
+    """
+    with open("highest_score.txt", "w") as f:
+        f.write(str(score))
+
 
 def winCheck(board, status, theme, text_col, moves):
     """
-    Check game status and display win/lose result.
+    Check game status and display win/lose result with highest score.
 
     Parameters:
         board (list): game board
@@ -36,6 +59,12 @@ def winCheck(board, status, theme, text_col, moves):
         # Calculate final score
         score = sum(sum(row) for row in board)
 
+        # Load and update highest score
+        highest_score = load_highest_score()
+        if score > highest_score:
+            highest_score = score
+            save_highest_score(highest_score)
+
         # Fill the window with a transparent background
         s = pygame.Surface((size, size), pygame.SRCALPHA)
         s.fill(c["colour"][theme]["over"])
@@ -47,14 +76,19 @@ def winCheck(board, status, theme, text_col, moves):
         else:
             msg = "GAME OVER!"
 
-        screen.blit(my_font.render(msg, 1, text_col), (140, 150))
+        # Render game over messages
+        screen.blit(my_font.render(msg, 1, text_col), (140, 100))
+        screen.blit(my_font.render(f"Moves: {moves}", 1, text_col), (140, 200))
+        screen.blit(my_font.render(f"Score: {score}", 1, text_col), (140, 240))
 
-        # Display moves and score
-        screen.blit(my_font.render(f"Moves: {moves}", 1, text_col), (140, 220))
-        screen.blit(my_font.render(f"Score: {score}", 1, text_col), (140, 260))
+        # Center the highest score text
+        highest_score_text = my_font.render(f"Highest Score: {highest_score}", 1, text_col)
+        highest_score_x = (size - highest_score_text.get_width()) // 2
+        highest_score_y = 280
+        screen.blit(highest_score_text, (highest_score_x, highest_score_y))
 
         # Ask user to play again
-        screen.blit(my_font.render("Play again? (y/ n)", 1, text_col), (80, 310))
+        screen.blit(my_font.render("Play again? (y/ n)", 1, text_col), (80, 330))
 
         pygame.display.update()
 
@@ -70,6 +104,7 @@ def winCheck(board, status, theme, text_col, moves):
                     board = newGame(theme, text_col)
                     return (board, "PLAY")
     return (board, status)
+
 
 
 def newGame(theme, text_col):
@@ -175,6 +210,9 @@ def playGame(theme, difficulty):
         theme (str): game interface theme
         difficulty (int): game difficulty, i.e., max. tile to get
     """
+    # Load highest score at the start of the game
+    highest_score = load_highest_score()
+
     # initialise game status
     status = "PLAY"
     moves = 0  # Count the number of moves
